@@ -45,4 +45,4 @@
 
     $("nav.view-tab-bar").append('<button class="view-tab-bar-item" style="order: 6"><a style="text-decoration:none;color:inherit" target="paletools" href="http://eallegretta.github.io/paletools.html">Palesnipe ' + ver + '</a>');
     window.__palesnipe = true;
-})(37,39,40,38,49,50,51,52,53);
+})(37,39,40,38,188,190,32,222,187);
