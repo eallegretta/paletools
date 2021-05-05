@@ -70,6 +70,53 @@
         }
     }, buttons || {});
 
+    UTMarketSearchResultsViewController.prototype._requestItems = function _requestItems(l) {
+        this._paginationViewModel.stopAuctionUpdates(),
+        services.Item.searchTransferMarket(this._searchCriteria, l).observe(this, function _onRequestItemsComplete(e, t) {
+            if (e.unobserve(this),
+            !t.success)
+                return NetworkErrorManager.checkCriticalStatus(t.status) ? void NetworkErrorManager.handleStatus(t.status) : (services.Notification.queue([services.Localization.localize("popup.error.searcherror"), enums.UINotificationType.NEGATIVE]),
+                void this.getNavigationController().popViewController());
+            if (0 < this._searchCriteria.offset && 0 === t.data.items.length)
+                this._requestItems(l - 1);
+            else {
+                var i = this._paginationViewModel.getNumItemsPerPage()
+                var o = t.data.items.slice();
+                if(this._searchCriteria['_type'] == "player" && this._searchCriteria.level=="gold"){//esto es lo unico nuevo
+                    o = o.filter(player => player.rating > 74)
+                }
+                if (this.onDataChange.notify({
+                    items: o
+                }),
+                o.length > i && (o = o.slice(0, i)),
+            
+                this._paginationViewModel.setPageItems(o),
+                this._paginationViewModel.setPageIndex(l),
+                this._selectedItem && 0 < o.length) {
+                    var n = this._paginationViewModel.getIndexByItemId(this._selectedItem.id);
+                    0 < n && this._paginationViewModel.setIndex(n),
+                    this._selectedItem = null
+                }
+
+
+                var s = this.getView()
+                  , r = null;
+                if (!this._stadiumViewmodel || this._searchCriteria.type !== SearchType.VANITY && this._searchCriteria.type !== SearchType.CLUB_INFO && this._searchCriteria.type !== SearchType.BALL || (r = this._stadiumViewmodel.getStadiumProgression(this._searchCriteria.subtypes)),
+                s.setItems(this._paginationViewModel.getCurrentPageItems(), r),
+                s.setPaginationState(1 < l, t.data.items.length > i),
+                JSUtils.isValid(this._compareItem) && !this._squadContext) {
+                    var a = JSUtils.find(o, function(e) {
+                        return e.getAuctionData().tradeId === this._compareItem.getAuctionData().tradeId
+                    }
+                    .bind(this));
+                    JSUtils.isValid(a) ? this._pinnedListItem.setItem(a) : this._paginationViewModel.setPinnedItem(this._compareItem)
+                } else
+                    !isPhone() && 0 < o.length && s.selectListRow(this._paginationViewModel.getCurrentItem().id)
+            }
+            this._paginationViewModel.startAuctionUpdates()
+        })
+    }
+    
     const
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
         BACK_BUTTON_THRESHOLD = 500, // throwhols to avoid multiple back button clicks
